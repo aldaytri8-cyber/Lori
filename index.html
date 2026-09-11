@@ -428,6 +428,10 @@
     const STORAGE_KEY = "laporan_tebu_data_v2";
     let currentDisplayMode = "portrait";
 
+    // Format Kosong untuk Reset
+    const emptyTimur = Array.from({ length: 9 }, (_, i) => ({ ban: i + 1, lori: "", tgl: "", brondol: "" }));
+    const emptyBarat = Array.from({ length: 9 }, (_, i) => ({ ban: i + 1, lori: "", tgl: "", brondol: "" }));
+
     const defaultTimur = [
         { ban: 1, lori: "16", tgl: "8/9", brondol: "" },
         { ban: 2, lori: "2+14", tgl: "8-9/9", brondol: "" },
@@ -478,7 +482,7 @@
                     <tr><th>Ban</th><th>Jml Lori</th><th>Tanggal</th><th>Brondol</th></tr>
                 </thead>
                 <tbody>`;
-            data.forEach((item, i) => {
+            data.forEach((item) => {
                 html += `
                     <tr>
                         <td class="label-col" style="text-align:center">${item.ban}</td>
@@ -604,6 +608,26 @@
         applyDataToForm(data);
     }
 
+    function resetForm() {
+        if (confirm("Apakah Anda yakin ingin mengosongkan/membersihkan seluruh isian form?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            
+            // Bersihkan data form secara explicit
+            const emptyPayload = {
+                mode: currentDisplayMode,
+                reportDate: document.getElementById('reportDate').value,
+                reportTime: document.getElementById('reportTime').value,
+                waNumber: '',
+                timur: JSON.parse(JSON.stringify(emptyTimur)),
+                barat: JSON.parse(JSON.stringify(emptyBarat))
+            };
+            
+            applyDataToForm(emptyPayload);
+            saveAllData();
+            alert("✓ Form berhasil dikosongkan!");
+        }
+    }
+
     function validateForm() {
         let errors = [];
         document.querySelectorAll('input').forEach(el => el.classList.remove('input-error'));
@@ -713,30 +737,20 @@
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-                // Validasi kelayakan struktur file JSON
                 if (importedData && (Array.isArray(importedData.timur) || Array.isArray(importedData.barat))) {
-                    if (importedData.mode) {
-                        switchMode(importedData.mode);
-                    }
+                    if (importedData.mode) switchMode(importedData.mode);
                     applyDataToForm(importedData);
                     saveAllData();
-                    alert("✓ Data berhasil dipulihkan (Restore Sukses)!");
+                    alert("✓ Data berhasil dipulihkan!");
                 } else {
                     alert("⚠️ Format file backup tidak sesuai!");
                 }
             } catch (err) {
-                alert("⚠️ File tidak dapat dibaca atau rusak!");
+                alert("⚠️ File tidak dapat dibaca!");
             }
         };
         reader.readAsText(file);
         event.target.value = '';
-    }
-
-    function resetForm() {
-        if (confirm("Apakah Anda yakin ingin mengosongkan/mengembalikan data awal?")) {
-            localStorage.removeItem(STORAGE_KEY);
-            loadSavedData();
-        }
     }
 
     function parseInputCell(loriStr, tglStr) {
