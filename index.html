@@ -519,11 +519,14 @@
         if (currentDisplayMode === 'portrait') {
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach((row, idx) => {
+                const loriEl = row.querySelector('.input-lori');
+                const tglEl = row.querySelector('.input-tgl');
+                const brondolEl = row.querySelector('.input-brondol');
                 list.push({
                     ban: idx + 1,
-                    lori: row.querySelector('.input-lori').value,
-                    tgl: row.querySelector('.input-tgl').value,
-                    brondol: row.querySelector('.input-brondol').value
+                    lori: loriEl ? loriEl.value : '',
+                    tgl: tglEl ? tglEl.value : '',
+                    brondol: brondolEl ? brondolEl.value : ''
                 });
             });
         } else {
@@ -534,9 +537,9 @@
             for (let i = 0; i < loriInputs.length; i++) {
                 list.push({
                     ban: i + 1,
-                    lori: loriInputs[i].value,
-                    tgl: tglInputs[i].value,
-                    brondol: brondolInputs[i].value
+                    lori: loriInputs[i] ? loriInputs[i].value : '',
+                    tgl: tglInputs[i] ? tglInputs[i].value : '',
+                    brondol: brondolInputs[i] ? brondolInputs[i].value : ''
                 });
             }
         }
@@ -618,8 +621,10 @@
 
                 if (currentDisplayMode === 'portrait') {
                     const row = table.querySelectorAll('tbody tr')[idx];
-                    loriInput = row.querySelector('.input-lori');
-                    tglInput = row.querySelector('.input-tgl');
+                    if (row) {
+                        loriInput = row.querySelector('.input-lori');
+                        tglInput = row.querySelector('.input-tgl');
+                    }
                 } else {
                     loriInput = table.querySelectorAll('tbody tr:nth-child(1) .input-lori')[idx];
                     tglInput = table.querySelectorAll('tbody tr:nth-child(2) .input-tgl')[idx];
@@ -627,22 +632,22 @@
 
                 if (loriVal !== '' && tglVal === '') {
                     errors.push(`${sectionName} Ban ${ban}: Jumlah Lori diisi tetapi Tanggal kosong.`);
-                    tglInput.classList.add('input-error');
+                    if (tglInput) tglInput.classList.add('input-error');
                 }
 
                 if (loriVal === '' && tglVal !== '') {
                     errors.push(`${sectionName} Ban ${ban}: Tanggal diisi tetapi Jumlah Lori kosong.`);
-                    loriInput.classList.add('input-error');
+                    if (loriInput) loriInput.classList.add('input-error');
                 }
 
                 if (loriVal !== '' && !/^[0-9+]+$/.test(loriVal)) {
                     errors.push(`${sectionName} Ban ${ban}: Format lori "${loriVal}" salah (hanya boleh angka & '+').`);
-                    loriInput.classList.add('input-error');
+                    if (loriInput) loriInput.classList.add('input-error');
                 }
 
                 if (tglVal !== '' && !/^[0-9/-]+$/.test(tglVal)) {
                     errors.push(`${sectionName} Ban ${ban}: Format tanggal "${tglVal}" salah (contoh: 8/9 atau 8-9/9).`);
-                    tglInput.classList.add('input-error');
+                    if (tglInput) tglInput.classList.add('input-error');
                 }
 
                 if (loriVal !== '' && tglVal !== '' && /^[0-9+]+$/.test(loriVal) && /^[0-9/-]+$/.test(tglVal)) {
@@ -656,8 +661,8 @@
                     }
                     if (countPlus !== countDates && countDates > 1) {
                         errors.push(`${sectionName} Ban ${ban}: Pembagian lori (${countPlus}) tidak sesuai rentang hari (${countDates}).`);
-                        loriInput.classList.add('input-error');
-                        tglInput.classList.add('input-error');
+                        if (loriInput) loriInput.classList.add('input-error');
+                        if (tglInput) tglInput.classList.add('input-error');
                     }
                 }
             });
@@ -684,13 +689,16 @@
 
     function exportData() {
         const payload = getCurrentPayload();
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+        const jsonString = JSON.stringify(payload, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
         const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("href", url);
         downloadAnchor.setAttribute("download", `Backup_Laporan_Tebu_${payload.reportDate || 'laporan'}.json`);
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+        URL.revokeObjectURL(url);
     }
 
     function triggerImport() {
@@ -705,16 +713,19 @@
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-                if (importedData.timur && importedData.barat) {
-                    if (importedData.mode) switchMode(importedData.mode);
+                // Validasi kelayakan struktur file JSON
+                if (importedData && (Array.isArray(importedData.timur) || Array.isArray(importedData.barat))) {
+                    if (importedData.mode) {
+                        switchMode(importedData.mode);
+                    }
                     applyDataToForm(importedData);
                     saveAllData();
-                    alert("Data berhasil dipulihkan!");
+                    alert("✓ Data berhasil dipulihkan (Restore Sukses)!");
                 } else {
-                    alert("Format file backup tidak valid!");
+                    alert("⚠️ Format file backup tidak sesuai!");
                 }
             } catch (err) {
-                alert("Gagal membaca file backup!");
+                alert("⚠️ File tidak dapat dibaca atau rusak!");
             }
         };
         reader.readAsText(file);
