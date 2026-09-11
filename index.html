@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Tebu Lori - Responsive Mode v0.0000001</title>
+    <style>
+        :root {
+            --primary: #1e5e3a;
+            --primary-hover: #144228;
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --border: #d1d5db;
+            --whatsapp: #25d366;
+            --whatsapp-hover: #1da851;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #1f2937;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* WATERMARK BACKGROUND */
+        body::before {
+            content: "@ferryari.s";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 8vw;
+            font-weight: 900;
+            color: rgba(0, 0, 0, 0.04);
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .container {
+            width: 100%;
+            background: var(--card);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: max-width 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Mode Width Dynamics */
+        .mode-portrait .container { max-width: 480px; }
+        .mode-landscape .container { max-width: 1080px; }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+
+        .version-badge {
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .save-status {
+            text-align: center;
+            font-size: 11px;
+            color: #059669;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        /* Switch Mode Toggle */
+        .mode-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            background: #e5e7eb;
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn-mode {
+            flex: 1;
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            font-weight: bold;
+            color: #4b5563;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-mode.active {
+            background: var(--card);
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Error Alert Box */
+        .error-alert-box {
+            display: none;
+            background-color: var(--danger-bg);
+            border: 1px solid var(--danger);
+            color: #991b1b;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .error-alert-box ul {
+            margin-left: 16px;
+            margin-top: 4px;
+        }
+
+        .info-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 130px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        input[type="date"],
+        input[type="time"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .section-header {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 6px 6px 0 0;
+            margin-top: 16px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        table.board-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        table.board-table th, 
+        table.board-table td {
+            border: 1px solid var(--border);
+            padding: 6px 2px;
+            text-align: center;
+        }
+
+        .mode-landscape table.board-table th,
+        .mode-landscape table.board-table td {
+            min-width: 85px;
+        }
+
+        .mode-portrait table.board-table th,
+        .mode-portrait table.board-table td {
+            min-width: 50px;
+        }
+
+        table.board-table th {
+            background: #f3f4f6;
+            font-size: 11px;
+        }
+
+        table.board-table td.label-col {
+            font-weight: bold;
+            background: #f9fafb;
+            text-align: left;
+            padding-left: 8px;
+            min-width: 100px !important;
+        }
+
+        table.board-table input {
+            width: 100%;
+            padding: 6px 2px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        table.board-table input.input-error {
+            border: 1.5px solid var(--danger) !important;
+            background-color: #fef2f2 !important;
+        }
+
+        table.board-table input:focus {
+            border-color: var(--primary);
+            outline: none;
+            background-color: #f0fdf4;
+        }
+
+        .preview-box {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .backup-restore-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 16px;
+        }
+
+        .backup-restore-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0369a1;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-wa {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background-color: var(--whatsapp);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-wa:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* WATERMARK FOOTER */
+        .footer-watermark {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+            font-weight: 500;
+            border-top: 1px dashed var(--border);
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body class="mode-portrait">
+
+<div class="container">
+    <h2>Laporan Tebu Menginap</h2>
+    <div class="version-badge">Versi 0.0000001</div>
+    <div class="save-status" id="saveStatus">✓ Tersimpan otomatis di perangkat</div>
+
+    <!-- Mode Display Switcher -->
+    <div class="mode-switcher">
+        <button type="button" class="btn-mode active" id="btnPortrait" onclick="switchMode('portrait')">📱 Mode Portrait (HP)</button>
+        <button type="button" class="btn-mode" id="btnLandscape" onclick="switchMode('landscape')">💻 Mode Landscape (Tabel)</button>
+    </div>
+
+    <!-- Error Alert Box -->
+    <div class="error-alert-box" id="errorAlert">
+        <strong>⚠️ Peringatan Kesalahan Ketik:</strong>
+        <ul id="errorList"></ul>
+    </div>
+
+    <!-- Header Laporan -->
+    <div class="info-header">
+        <div class="form-group">
+            <label for="reportDate">Tanggal Laporan:</label>
+            <input type="date" id="reportDate">
+        </div>
+        <div class="form-group">
+            <label for="reportTime">Jam Kirim:</label>
+            <input type="time" id="reportTime">
+        </div>
+        <div class="form-group">
+            <label for="waNumber">No. WA Tujuan (Opsional):</label>
+            <input type="tel" id="waNumber" placeholder="Contoh: 628123456789">
+        </div>
+    </div>
+
+    <!-- Tabel TIMUR -->
+    <div class="section-header">TIMUR</div>
+    <div class="table-responsive">
+        <table class="board-table" id="tableTimur"></table>
+    </div>
+
+    <!-- Tabel BARAT -->
+    <div class="section-header">BARAT</div>
+    <div class="table-responsive">
+        <table class="board-table" id="tableBarat"></table>
+    </div>
+
+    <!-- Preview Pesan WA -->
+    <div>
+        <label>Preview Pesan WhatsApp:</label>
+        <div class="preview-box" id="waPreview"></div>
+    </div>
+
+    <!-- Backup & Restore -->
+    <div class="backup-restore-box">
+        <div class="backup-restore-title">Backup & Restore Data</div>
+        <div class="btn-row">
+            <button type="button" class="btn-secondary" onclick="exportData()">💾 Backup (Unduh File)</button>
+            <button type="button" class="btn-secondary" onclick="triggerImport()">📂 Restore (Upload File)</button>
+        </div>
+        <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importData(event)">
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="btn-group">
+        <button type="button" class="btn-wa" id="btnWa" onclick="sendWhatsApp()">
+            Kirim Laporan via WhatsApp
+        </button>
+        <button type="button" class="btn-reset" onclick="resetForm()">
+            Reset / Bersihkan Form
+        </button>
+    </div>
+
+    <!-- Watermark Footer -->
+    <div class="footer-watermark">
+        Dibuat oleh <strong>@ferryari.s</strong> | Versi 0.0000001
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = "laporan_tebu_data_v2";
+    let currentDisplayMode = "portrait";
+
+    const defaultTimur = [
+        { ban: 1, lori: "16", tgl: "8/9", brondol: "" },
+        { ban: 2, lori: "2+14", tgl: "8-9/9", brondol: "" },
+        { ban: 3, lori: "20", tgl: "9/9", brondol: "" },
+        { ban: 4, lori: "21", tgl: "8/9", brondol: "" },
+        { ban: 5, lori: "20", tgl: "8/9", brondol: "" },
+        { ban: 6, lori: "22", tgl: "9/9", brondol: "" },
+        { ban: 7, lori: "18", tgl: "9/9", brondol: "" },
+        { ban: 8, lori: "17+4", tgl: "9-10/9", brondol: "" },
+        { ban: 9, lori: "", tgl: "", brondol: "" }
+    ];
+
+    const defaultBarat = [
+        { ban: 1, lori: "19+6", tgl: "7-8/9", brondol: "" },
+        { ban: 2, lori: "20", tgl: "10/9", brondol: "" },
+        { ban: 3, lori: "11+9", tgl: "9-10/9", brondol: "" },
+        { ban: 4, lori: "", tgl: "", brondol: "" },
+        { ban: 5, lori: "19", tgl: "10/9", brondol: "" },
+        { ban: 6, lori: "10+12", tgl: "8-9/9", brondol: "" },
+        { ban: 7, lori: "21", tgl: "10/9", brondol: "" },
+        { ban: 8, lori: "20", tgl: "8/9", brondol: "" },
+        { ban: 9, lori: "20", tgl: "8/9", brondol: "" }
+    ];
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadSavedData();
+    });
+
+    function switchMode(mode) {
+        const currentData = getCurrentPayload();
+        currentDisplayMode = mode;
+        
+        document.body.className = `mode-${mode}`;
+        document.getElementById('btnPortrait').classList.toggle('active', mode === 'portrait');
+        document.getElementById('btnLandscape').classList.toggle('active', mode === 'landscape');
+
+        applyDataToForm(currentData);
+        saveAllData();
+    }
+
+    function renderTable(tableId, data) {
+        const table = document.getElementById(tableId);
+        table.innerHTML = '';
+
+        if (currentDisplayMode === 'portrait') {
+            let html = `
+                <thead>
+                    <tr><th>Ban</th><th>Jml Lori</th><th>Tanggal</th><th>Brondol</th></tr>
+                </thead>
+                <tbody>`;
+            data.forEach((item, i) => {
+                html += `
+                    <tr>
+                        <td class="label-col" style="text-align:center">${item.ban}</td>
+                        <td><input type="text" class="input-lori" value="${item.lori || ''}"></td>
+                        <td><input type="text" class="input-tgl" value="${item.tgl || ''}"></td>
+                        <td><input type="text" class="input-brondol" value="${item.brondol || ''}"></td>
+                    </tr>`;
+            });
+            html += `</tbody>`;
+            table.innerHTML = html;
+        } else {
+            let html = `
+                <thead>
+                    <tr><td class="label-col">Ban</td>${data.map(d => `<th>${d.ban}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label-col">Jumlah Lori</td>
+                        ${data.map(d => `<td><input type="text" class="input-lori" value="${d.lori || ''}"></td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="label-col">Tanggal</td>
+                        ${data.map(d => `<td><input type="text" class="input-tgl" value="${d.tgl || ''}"></td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="label-col">Brondol</td>
+                        ${data.map(d => `<td><input type="text" class="input-brondol" value="${d.brondol || ''}"></td>`).join('')}
+                    </tr>
+                </tbody>`;
+            table.innerHTML = html;
+        }
+    }
+
+    function extractTableData(tableId) {
+        const table = document.getElementById(tableId);
+        let list = [];
+
+        if (currentDisplayMode === 'portrait') {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach((row, idx) => {
+                list.push({
+                    ban: idx + 1,
+                    lori: row.querySelector('.input-lori').value,
+                    tgl: row.querySelector('.input-tgl').value,
+                    brondol: row.querySelector('.input-brondol').value
+                });
+            });
+        } else {
+            const loriInputs = table.querySelectorAll('tbody tr:nth-child(1) .input-lori');
+            const tglInputs = table.querySelectorAll('tbody tr:nth-child(2) .input-tgl');
+            const brondolInputs = table.querySelectorAll('tbody tr:nth-child(3) .input-brondol');
+
+            for (let i = 0; i < loriInputs.length; i++) {
+                list.push({
+                    ban: i + 1,
+                    lori: loriInputs[i].value,
+                    tgl: tglInputs[i].value,
+                    brondol: brondolInputs[i].value
+                });
+            }
+        }
+        return list;
+    }
+
+    function getCurrentPayload() {
+        return {
+            mode: currentDisplayMode,
+            reportDate: document.getElementById('reportDate').value,
+            reportTime: document.getElementById('reportTime').value,
+            waNumber: document.getElementById('waNumber').value,
+            timur: extractTableData('tableTimur'),
+            barat: extractTableData('tableBarat')
+        };
+    }
+
+    function saveAllData() {
+        const payload = getCurrentPayload();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.textContent = "✓ Tersimpan otomatis";
+        setTimeout(() => { statusEl.textContent = "✓ Tersimpan otomatis di perangkat"; }, 1500);
+    }
+
+    function applyDataToForm(data) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
+        document.getElementById('reportDate').value = (data && data.reportDate) ? data.reportDate : `${year}-${month}-${day}`;
+        document.getElementById('reportTime').value = (data && data.reportTime) ? data.reportTime : `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('waNumber').value = (data && data.waNumber) ? data.waNumber : '';
+
+        renderTable('tableTimur', (data && data.timur) ? data.timur : defaultTimur);
+        renderTable('tableBarat', (data && data.barat) ? data.barat : defaultBarat);
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                saveAllData();
+                updateCalculation();
+            });
+        });
+
+        updateCalculation();
+    }
+
+    function loadSavedData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        let data = null;
+        if (saved) {
+            try { data = JSON.parse(saved); } catch(e) {}
+        }
+        if (data && data.mode) {
+            currentDisplayMode = data.mode;
+            document.body.className = `mode-${data.mode}`;
+            document.getElementById('btnPortrait').classList.toggle('active', data.mode === 'portrait');
+            document.getElementById('btnLandscape').classList.toggle('active', data.mode === 'landscape');
+        }
+        applyDataToForm(data);
+    }
+
+    function validateForm() {
+        let errors = [];
+        document.querySelectorAll('input').forEach(el => el.classList.remove('input-error'));
+
+        const checkSection = (tableId, sectionName) => {
+            const data = extractTableData(tableId);
+            const table = document.getElementById(tableId);
+
+            data.forEach((item, idx) => {
+                const ban = item.ban;
+                const loriVal = item.lori.trim();
+                const tglVal = item.tgl.trim();
+
+                let loriInput, tglInput;
+
+                if (currentDisplayMode === 'portrait') {
+                    const row = table.querySelectorAll('tbody tr')[idx];
+                    loriInput = row.querySelector('.input-lori');
+                    tglInput = row.querySelector('.input-tgl');
+                } else {
+                    loriInput = table.querySelectorAll('tbody tr:nth-child(1) .input-lori')[idx];
+                    tglInput = table.querySelectorAll('tbody tr:nth-child(2) .input-tgl')[idx];
+                }
+
+                if (loriVal !== '' && tglVal === '') {
+                    errors.push(`${sectionName} Ban ${ban}: Jumlah Lori diisi tetapi Tanggal kosong.`);
+                    tglInput.classList.add('input-error');
+                }
+
+                if (loriVal === '' && tglVal !== '') {
+                    errors.push(`${sectionName} Ban ${ban}: Tanggal diisi tetapi Jumlah Lori kosong.`);
+                    loriInput.classList.add('input-error');
+                }
+
+                if (loriVal !== '' && !/^[0-9+]+$/.test(loriVal)) {
+                    errors.push(`${sectionName} Ban ${ban}: Format lori "${loriVal}" salah (hanya boleh angka & '+').`);
+                    loriInput.classList.add('input-error');
+                }
+
+                if (tglVal !== '' && !/^[0-9/-]+$/.test(tglVal)) {
+                    errors.push(`${sectionName} Ban ${ban}: Format tanggal "${tglVal}" salah (contoh: 8/9 atau 8-9/9).`);
+                    tglInput.classList.add('input-error');
+                }
+
+                if (loriVal !== '' && tglVal !== '' && /^[0-9+]+$/.test(loriVal) && /^[0-9/-]+$/.test(tglVal)) {
+                    const countPlus = (loriVal.match(/\+/g) || []).length + 1;
+                    let countDates = 1;
+                    if (tglVal.includes('-')) {
+                        const parts = tglVal.split('/')[0].split('-');
+                        if (parts.length === 2) {
+                            countDates = (parseInt(parts[1]) - parseInt(parts[0])) + 1;
+                        }
+                    }
+                    if (countPlus !== countDates && countDates > 1) {
+                        errors.push(`${sectionName} Ban ${ban}: Pembagian lori (${countPlus}) tidak sesuai rentang hari (${countDates}).`);
+                        loriInput.classList.add('input-error');
+                        tglInput.classList.add('input-error');
+                    }
+                }
+            });
+        };
+
+        checkSection('tableTimur', 'Timur');
+        checkSection('tableBarat', 'Barat');
+
+        const alertBox = document.getElementById('errorAlert');
+        const listEl = document.getElementById('errorList');
+        const btnWa = document.getElementById('btnWa');
+
+        if (errors.length > 0) {
+            listEl.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+            alertBox.style.display = 'block';
+            btnWa.disabled = true;
+        } else {
+            alertBox.style.display = 'none';
+            btnWa.disabled = false;
+        }
+
+        return errors.length === 0;
+    }
+
+    function exportData() {
+        const payload = getCurrentPayload();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `Backup_Laporan_Tebu_${payload.reportDate || 'laporan'}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function triggerImport() {
+        document.getElementById('fileInput').click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData.timur && importedData.barat) {
+                    if (importedData.mode) switchMode(importedData.mode);
+                    applyDataToForm(importedData);
+                    saveAllData();
+                    alert("Data berhasil dipulihkan!");
+                } else {
+                    alert("Format file backup tidak valid!");
+                }
+            } catch (err) {
+                alert("Gagal membaca file backup!");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    function resetForm() {
+        if (confirm("Apakah Anda yakin ingin mengosongkan/mengembalikan data awal?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            loadSavedData();
+        }
+    }
+
+    function parseInputCell(loriStr, tglStr) {
+        if (!loriStr || !tglStr) return [];
+
+        const loriParts = loriStr.split('+').map(s => parseInt(s.trim()) || 0);
+        let dates = [];
+
+        if (tglStr.includes('-')) {
+            const rangeAndMonth = tglStr.split('/');
+            const monthPart = rangeAndMonth[1] ? '/' + rangeAndMonth[1] : '';
+            const rangeDays = rangeAndMonth[0].split('-');
+            
+            if (rangeDays.length === 2) {
+                const startDay = parseInt(rangeDays[0]);
+                const endDay = parseInt(rangeDays[1]);
+                for (let d = startDay; d <= endDay; d++) {
+                    dates.push(d + monthPart);
+                }
+            }
+        } else {
+            dates.push(tglStr.trim());
+        }
+
+        let results = [];
+        for (let i = 0; i < loriParts.length; i++) {
+            let dateKey = dates[i] || dates[0] || "Lainnya";
+            results.push({ date: dateKey, count: loriParts[i] });
+        }
+        return results;
+    }
+
+    function processTable(tableId) {
+        const data = extractTableData(tableId);
+        let results = [];
+
+        data.forEach(item => {
+            if (item.lori && item.tgl) {
+                const parsed = parseInputCell(item.lori, item.tgl);
+                results.push(...parsed);
+            }
+        });
+
+        return results;
+    }
+
+    function generateMessage() {
+        const rDate = document.getElementById('reportDate').value;
+        const rTime = document.getElementById('reportTime').value;
+
+        const allEntries = [
+            ...processTable('tableTimur'),
+            ...processTable('tableBarat')
+        ];
+
+        let dateTotals = {};
+        let grandTotal = 0;
+
+        allEntries.forEach(item => {
+            if (!dateTotals[item.date]) dateTotals[item.date] = 0;
+            dateTotals[item.date] += item.count;
+            grandTotal += item.count;
+        });
+
+        let formattedReportDate = rDate;
+        if (rDate) {
+            const p = rDate.split('-');
+            formattedReportDate = `${p[2]}/${p[1]}/${p[0]}`;
+        }
+        const hourOnly = rTime ? rTime.split(':')[0] : '11';
+
+        let msg = `JAM ${hourOnly}\n`;
+        msg += `SISA TEBU ${formattedReportDate} :\n\n`;
+
+        const sortedDates = Object.keys(dateTotals).sort((a, b) => {
+            const dayA = parseInt(a) || 0;
+            const dayB = parseInt(b) || 0;
+            return dayA - dayB;
+        });
+
+        sortedDates.forEach(d => {
+            msg += `TGL ${d}  =  ${dateTotals[d]} LORI\n\n`;
+        });
+
+        msg += `TOTAL  =  ${grandTotal} LORI.`;
+
+        return { msg, grandTotal };
+    }
+
+    function updateCalculation() {
+        const isValid = validateForm();
+        if (isValid) {
+            const { msg } = generateMessage();
+            document.getElementById('waPreview').textContent = msg;
+        } else {
+            document.getElementById('waPreview').textContent = "[⚠️ Laporan tidak dapat digenerate karena ada kesalahan ketik]";
+        }
+    }
+
+    function sendWhatsApp() {
+        if (!validateForm()) {
+            alert("Harap perbaiki kesalahan ketik sebelum mengirim laporan!");
+            return;
+        }
+        const { msg } = generateMessage();
+        const number = document.getElementById('waNumber').value.trim();
+        const encodedMsg = encodeURIComponent(msg);
+
+        let url = number 
+            ? `https://api.whatsapp.com/send?phone=${number.replace(/[^0-9]/g, '')}&text=${encodedMsg}`
+            : `https://api.whatsapp.com/send?text=${encodedMsg}`;
+
+        window.open(url, '_blank');
+    }
+</script>
+
+</body>
+</html>
